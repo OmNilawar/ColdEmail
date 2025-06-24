@@ -11,31 +11,39 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Log the profile object to debug and verify the data
-        console.log('Google Profile:', profile);
+        const email = profile.emails[0].value;
+        const googleId = profile.id;
 
-        // Check if user already exists in the database
-        let user = await User.findOne({ googleId: profile.id });
+        let user = await User.findOne({ email });
 
-        if (!user) {
-          // Create a new user if not found
-          user = await User.create({
-            fullName: profile.displayName,
-            email: profile.emails[0].value,
-            googleId: profile.id,
-            accessToken,
-            refreshToken,
-            profileImage: profile.photos?.[0]?.value,
-          });
-        } else {
-          // Update tokens and profile image if user already exists
+        if (user) {
+          if (!user.googleId) {
+            user.googleId = googleId;
+          }
+
+          if (user.password && user.loginMethod !== 'both') {
+            user.loginMethod = 'both';
+          } else if (!user.loginMethod || user.loginMethod !== 'google') {
+            user.loginMethod = 'google';
+          }
+
           user.accessToken = accessToken;
           user.refreshToken = refreshToken;
           user.profileImage = profile.photos?.[0]?.value;
+
           await user.save();
+        } else {
+          user = await User.create({
+            fullName: profile.displayName,
+            email,
+            googleId,
+            accessToken,
+            refreshToken,
+            profileImage: profile.photos?.[0]?.value,
+            loginMethod: 'google',
+          });
         }
 
-        // Pass all needed fields for controller access
         done(null, {
           googleId: user.googleId,
           fullName: user.fullName,
@@ -43,6 +51,7 @@ passport.use(
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
           profileImage: user.profileImage,
+          loginMethod: user.loginMethod,
         });
       } catch (error) {
         done(error, null);
@@ -51,12 +60,11 @@ passport.use(
   )
 );
 
-// Serialize the whole user object for controller access
+// Passport session handling
 passport.serializeUser((user, done) => {
   done(null, user);
 });
 
-// Deserialize the whole user object
 passport.deserializeUser((user, done) => {
   done(null, user);
 });
