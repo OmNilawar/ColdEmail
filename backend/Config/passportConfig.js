@@ -17,15 +17,9 @@ passport.use(
         let user = await User.findOne({ email });
 
         if (user) {
-          if (!user.googleId) {
-            user.googleId = googleId;
-          }
-
-          if (user.password && user.loginMethod !== 'both') {
-            user.loginMethod = 'both';
-          } else if (!user.loginMethod || user.loginMethod !== 'google') {
-            user.loginMethod = 'google';
-          }
+          if (!user.googleId) user.googleId = googleId;
+          if (user.password && user.loginMethod !== 'both') user.loginMethod = 'both';
+          else if (!user.loginMethod || user.loginMethod !== 'google') user.loginMethod = 'google';
 
           user.accessToken = accessToken;
           user.refreshToken = refreshToken;
@@ -44,15 +38,7 @@ passport.use(
           });
         }
 
-        done(null, {
-          googleId: user.googleId,
-          fullName: user.fullName,
-          email: user.email,
-          accessToken: user.accessToken,
-          refreshToken: user.refreshToken,
-          profileImage: user.profileImage,
-          loginMethod: user.loginMethod,
-        });
+        done(null, user._id); // ✅ Store only the ID in session
       } catch (error) {
         done(error, null);
       }
@@ -60,13 +46,18 @@ passport.use(
   )
 );
 
-// Passport session handling
-passport.serializeUser((user, done) => {
-  done(null, user);
+// ✅ Deserialize from session and attach full user to req.user
+passport.serializeUser((userId, done) => {
+  done(null, userId);
 });
 
-passport.deserializeUser((user, done) => {
-  done(null, user);
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user); // This will now include user._id on req.user
+  } catch (error) {
+    done(error, null);
+  }
 });
 
 export default passport;

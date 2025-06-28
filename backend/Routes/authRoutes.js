@@ -1,6 +1,12 @@
 import express from 'express';
 import passport from 'passport';
 import { googleAuthCallback } from '../Controllers/authController.js';
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  setPassword,
+} from '../Controllers/authLocalController.js';
 
 const router = express.Router();
 
@@ -20,5 +26,12 @@ router.get(
   passport.authenticate('google', { failureRedirect: '/' }),
   googleAuthCallback
 );
+
+
+router.post('/register', registerUser);
+router.post('/login', loginUser);
+router.get('/logout', logoutUser);
+router.post('set-password',setPassword)
+
 
 export default router;

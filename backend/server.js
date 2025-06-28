@@ -4,7 +4,6 @@ import session from 'express-session';
 import passport from './Config/passportConfig.js'; // Ensure passport is configured
 import authRouter from './Routes/authRoutes.js'; // Import the auth routes
 import emailRouter from './Routes/emailRoutes.js';
-import draftRouter from './Routes/draftRoutes.js'
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -34,7 +33,6 @@ app.use(passport.session());
 // Use the auth routes
 app.use('/auth', authRouter);
 app.use('/email', emailRouter);
-app.use('/draft', draftRouter);
 
 app.get('/', (req, res) => {
   res.send('Cold Email AI Backend is running!');
