@@ -31,7 +31,7 @@ router.get(
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.get('/logout', logoutUser);
-router.post('set-password',setPassword)
+router.post('/set-password',setPassword)
 
 
 export default router;

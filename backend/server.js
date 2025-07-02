@@ -5,6 +5,8 @@ import passport from './Config/passportConfig.js'; // Ensure passport is configu
 import authRouter from './Routes/authRoutes.js'; // Import the auth routes
 import emailRouter from './Routes/emailRoutes.js';
 
+//command for testing
+
 const app = express();
 const PORT = process.env.PORT || 8000;
 
